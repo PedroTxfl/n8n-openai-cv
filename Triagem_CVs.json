@@ -1,0 +1,265 @@
+{
+  "name": "Triagem_CVs",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "b272874a-d7aa-41da-a41c-46b109289bf2",
+      "name": "Extract Document PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        1264,
+        896
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.file_url }}",
+        "options": {}
+      },
+      "id": "0bcbec70-6692-4eb8-9562-4844bba742e6",
+      "name": "Download File",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1088,
+        896
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {},
+      "id": "c3abc80b-fd84-45d1-b05d-06a3be84b4e3",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        720,
+        896
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "**Adicionar link direto para o CV e Descrição da vaga**",
+        "height": 80,
+        "width": 187.37066290133808
+      },
+      "id": "332e80e1-f7d5-475f-b786-ecde19da3a3a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        864,
+        768
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "##  Configuração (Setup)\n\n1.  **Baixar Arquivo**: Obtenha o CV (currículo) usando sua URL direta.\n2.  **Extrair Dados**: Use os *nodes* (nós) de extração de PDF ou texto do **N8N** para recuperar o texto do CV.\n3.  **Enviar para o OpenAI**:\n    * **URL**: Faça uma requisição **POST** para a API do OpenAI para análise.\n    * **Parâmetros**:\n        * Inclua os dados extraídos do CV e a descrição da vaga.\n        * Use o **JSON Schema** para estruturar a resposta.\n4.  **Salvar Resultados**:\n    * Armazene os dados extraídos e a análise do OpenAI no **Supabase** para uso posterior.\n",
+        "height": 438.5821431288714,
+        "width": 280.2462120317618,
+        "color": 7
+      },
+      "id": "8b473e03-b86a-45a0-9200-a27473432b54",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1856,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Fluxo de Trabalho de Triagem de Currículos\n\nEste fluxo de trabalho é **ideal para agências de recrutamento, profissionais de RH e gerentes de contratação** que procuram automatizar a triagem inicial de currículos. É especialmente útil para **organizações que lidam com grandes volumes de candidaturas** e que procuram otimizar o seu processo de recrutamento.\n\nEste fluxo de trabalho **automatiza o processo de triagem de currículos** usando o **OpenAI para análise** e o **Supabase para armazenamento de dados estruturados**. Ele fornece uma **pontuação de correspondência**, um **resumo da adequação do candidato** e **principais *insights*** sobre porque o candidato se encaixa (ou não) na vaga.\n\n1.  **Recuperar Currículo**: O fluxo de trabalho baixa currículos de um link direto (por exemplo, armazenamento Supabase ou Dropbox).\n2.  **Extrair Dados**: Extrai dados de texto de arquivos PDF ou DOC para análise.\n3.  **Analisar com OpenAI**: Envia os dados extraídos e a descrição da vaga para o OpenAI para:\n    * Gerar uma pontuação de correspondência.\n    * Resumir os pontos fortes e fracos do candidato.\n    * Fornecer *insights* acionáveis sobre sua adequação para a vaga.\n4.  **Armazenar Resultados no Supabase**: Salva a análise e os dados brutos em um formato estruturado para processamento posterior ou integração em outras ferramentas.\n",
+        "height": 598.6675280064023,
+        "width": 636.2128494576581,
+        "color": 7
+      },
+      "id": "9fa26b35-b8ed-436d-9d15-50f6d343301b",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "**Configure a conexão OpenAI**",
+        "height": 80,
+        "width": 187.37066290133808
+      },
+      "id": "03fbf3e1-557a-471f-ab44-a94073c2407f",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1408,
+        768
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"model\": \"gpt-4o-mini\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"{{ $('Set Variables').item.json.prompt }}\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": {{ JSON.stringify($json.text) }}\n      }\n    ],\n    \"response_format\": { \n      \"type\": \"json_schema\", \n      \"json_schema\": {{ JSON.parse($('Set Variables').item.json.json_schema) }}\n    }\n}\n",
+        "options": {}
+      },
+      "id": "6c8767cc-efaa-4256-af6d-82260fb0c909",
+      "name": "OpenAI - Analyze CV",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1440,
+        896
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "KvkmnBZOXzOXSwg0",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "83274f6f-c73e-4d5e-946f-c6dfdf7ed1c4",
+              "name": "file_url",
+              "type": "string",
+              "value": "https://dgycufuttgamlxhipxkw.supabase.co/storage/v1/object/public/curriculos/Pedro%20Liu%20-%20Resume(EN).pdf"
+            },
+            {
+              "id": "6e44f3e5-a0df-4337-9f7e-7cfa91b3cc37",
+              "name": "job_description",
+              "type": "string",
+              "value": "Cargo: Desenvolvedor Python (IA/ML) - Júnior/Pleno\\n\\nLocal: Porto Alegre, RS (Modelo Híbrido)\\n\\nDescrição da Empresa:\\nSomos uma startup de tecnologia em rápido crescimento, focada em criar soluções de visão computacional e inteligência artificial para detecção de fraudes e análise de dados. Estamos buscando um Desenvolvedor Python talentoso para se juntar à nossa equipe de inovação.\\n\\nResponsabilidades:\\n- Desenvolver e manter APIs de IA (usando Python, Flask/FastAPI) para processamento em tempo real.\\n- Criar, treinar e otimizar modelos de Computer Vision (utilizando OpenCV, YOLO).\\n- Pesquisar e implementar novas soluções de GenAI, como sistemas RAG (Retrieval-Augmented Generation) para nossos produtos.\\n- Colaborar com a equipe de DevOps para implantar e monitorar os modelos em ambiente de produção na nuvem (AWS).\\n\\nRequisitos Obrigatórios:\\n- Experiência sólida em desenvolvimento com Python.\\n- Conhecimento prático em bibliotecas de IA/ML (ex: OpenCV, Scikit-learn, Transformers).\\n- Experiência com serviços da AWS (EC2, S3, EKS são um diferencial).\\n- Cursando ou concluído Ensino Superior em Análise e Desenvolvimento de Sistemas, Ciência da Computação ou áreas correlatas.\\n\\nDiferenciais:\\n- Conhecimento em Infraestrutura como Código (Terraform, CloudFormation).\\n- Experiência prévia com CI/CD (Jenkins, GitLab CI).\\n- Conhecimento em outras linguagens, como Java ou C#."
+            },
+            {
+              "id": "c597c502-9a3c-48e6-a5f5-8a2a8be7282c",
+              "name": "prompt",
+              "type": "string",
+              "value": "Você é um recrutador de uma agência de recrutamento, você é rigoroso e presta muita atenção aos detalhes em um currículo. Você trabalha com empresas e encontra talentos para suas vagas. Você avalia qualquer currículo de forma atenta e crítica. Se o candidato troca muito de emprego (job jumper), você percebe e nos informa.\\n\\nVocê precisa dizer se o candidato da nossa base é adequado para esta vaga.\\n\\nRetorne 4 coisas:\\n1. Percentual (em passos de 10%) de correspondência do currículo com a vaga.\\n2. Resumo curto - deve usar linguagem simples e ser breve. Forneça uma decisão final sobre o candidato com base no percentual e nas habilidades vs. requisitos.\\n3. Resumo dos motivos pelos quais este candidato é adequado para esta vaga.\\n4. Resumo dos motivos pelos quais este candidato não é adequado para esta vaga."
+            },
+            {
+              "id": "1884eed1-9111-4ce1-8d07-ed176611f2d8",
+              "name": "json_schema",
+              "type": "string",
+              "value": "\"{   \\\"name\\\": \\\"candidate_evaluation\\\",   \\\"description\\\": \\\"Dados estruturados para avaliar um candidato com base na experiência e adequação\\\",   \\\"strict\\\": true,   \\\"schema\\\": {     \\\"type\\\": \\\"object\\\",     \\\"properties\\\": {       \\\"percentage\\\": {         \\\"type\\\": \\\"integer\\\",         \\\"description\\\": \\\"Pontuação percentual geral de adequação do candidato\\\"       },       \\\"summary\\\": {         \\\"type\\\": \\\"string\\\",         \\\"description\\\": \\\"Um breve resumo da experiência, personalidade e quaisquer pontos fortes ou preocupações notáveis do candidato\\\"       },       \\\"reasons-suit\\\": {         \\\"type\\\": \\\"array\\\",         \\\"items\\\": {           \\\"type\\\": \\\"object\\\",           \\\"properties\\\": {             \\\"name\\\": { \\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"Título do ponto forte ou razão de adequação\\\" },             \\\"text\\\": { \\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"Descrição de como essa experiência ou habilidade corresponde aos requisitos da vaga\\\" }           },           \\\"required\\\": [\\\"name\\\", \\\"text\\\"],           \\\"additionalProperties\\\": false         },         \\\"description\\\": \\\"Lista de motivos pelos quais o candidato é adequado para a posição\\\"       },       \\\"reasons-notsuit\\\": {         \\\"type\\\": \\\"array\\\",         \\\"items\\\": {           \\\"type\\\": \\\"object\\\",           \\\"properties\\\": {             \\\"name\\\": { \\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"Título da preocupação ou motivo de inadequação\\\" },             \\\"text\\\": { \\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"Descrição de como este fator pode não estar alinhado com os requisitos da vaga\\\" }           },           \\\"required\\\": [\\\"name\\\", \\\"text\\\"],           \\\"additionalProperties\\\": false         },         \\\"description\\\": \\\"Lista de motivos pelos quais o candidato pode não ser adequado para a posição\\\"       }     },     \\\"required\\\": [\\\"percentage\\\", \\\"summary\\\", \\\"reasons-suit\\\", \\\"reasons-notsuit\\\"],     \\\"additionalProperties\\\": false   } }\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "669c6c54-c830-4fdf-b21d-7cacb7f72c3b",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        896,
+        896
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "83274f6f-c73e-4d5e-946f-c6dfdf7ed1c4",
+              "name": "json_parsed",
+              "type": "object",
+              "value": "={{ JSON.parse($json.choices[0].message.content) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0eaded3c-ff68-4606-993d-acbe7c29a14d",
+      "name": "Parsed JSON",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1616,
+        896
+      ],
+      "typeVersion": 3.4
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Extract Document PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Analyze CV": {
+      "main": [
+        [
+          {
+            "node": "Parsed JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Document PDF": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Analyze CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0edb9b20-d81e-49ac-acd3-d2a9ba95c708",
+  "meta": {
+    "instanceId": "c0f7582a3c73c1bc7f61d307981c9b15e2c4199ba8cd0b9959a7894c0bbc490d"
+  },
+  "id": "XmQiNiy6m1ySPysX",
+  "tags": []
+}
